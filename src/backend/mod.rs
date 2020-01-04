@@ -17,7 +17,7 @@ pub mod redis;
 #[async_trait]
 pub trait SessionBackend {
     /// An error occurred in backend
-    type Error: Error + 'static;
+    type Error: Error + Send + Sync + 'static;
 
     /// Returns a list of available session IDs
     async fn get_sessions(&mut self) -> Result<Vec<String>, Self::Error>;

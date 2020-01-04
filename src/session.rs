@@ -130,7 +130,7 @@ where
 #[derive(Debug)]
 pub enum SessionError {
     /// Backend error
-    Backend(Box<dyn Error>),
+    Backend(Box<dyn Error + Send + Sync>),
     /// Failed to check whether value expired
     CheckExpired(SystemTimeError),
     /// Failed to decode value
@@ -144,7 +144,7 @@ pub enum SessionError {
 }
 
 impl SessionError {
-    fn backend<E: Error + 'static>(err: E) -> Self {
+    fn backend<E: Error + Send + Sync + 'static>(err: E) -> Self {
         Self::Backend(Box::new(err))
     }
 }
