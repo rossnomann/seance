@@ -21,7 +21,7 @@ See [tests](https://github.com/rossnomann/seance/tree/master/tests) directory.
 
 # Changelog
 
-## 0.1.0 (xx.01.2020)
+## 0.1.0 (04.01.2020)
 
 - First release.
 
