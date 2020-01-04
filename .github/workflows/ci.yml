@@ -1,0 +1,47 @@
+on: [push, pull_request]
+name: CI
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379/tcp
+    steps:
+      - uses: actions/checkout@v1
+        name: checkout
+      - uses: actions-rs/toolchain@v1
+        name: toolchain
+        with:
+          profile: minimal
+          toolchain: ${{matrix.rust}}
+          override: true
+          components: rustfmt, clippy
+      - uses: actions-rs/cargo@v1
+        name: cargo check
+        with:
+          command: check
+      - uses: actions-rs/cargo@v1
+        name: rustfmt
+        with:
+          command: fmt
+          args: -- --check
+      - uses: actions-rs/cargo@v1
+        name: clippy
+        with:
+          command: clippy
+          args: --all-targets --all-features -- -D warnings
+      - uses: actions-rs/cargo@v1
+        name: test
+        env:
+          SEANCE_REDIS_ADDRESS: 127.0.0.1:${{ job.services.redis.ports[6379] }}
+        with:
+          command: test
+          args: --all-targets --all-features

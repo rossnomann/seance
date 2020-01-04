@@ -19,6 +19,7 @@ async fn redis() {
         Err(VarError::NotPresent) => String::from(DEFAULT_ADDRESS),
         Err(err) => panic!("{}", err),
     };
+    println!("REDIS ADDRESS: {:?}", address);
     let pool = ConnectionPool::create(address, None, CONNECTION_COUNT)
         .await
         .unwrap();
