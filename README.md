@@ -2,6 +2,7 @@
 
 A session library written in Rust
 
+[![CI](https://img.shields.io/github/workflow/status/rossnomann/seance/CI?style=flat-square)](https://github.com/rossnomann/seance/actions/)
 [![Version](https://img.shields.io/crates/v/seance.svg?style=flat-square)](https://crates.io/crates/seance)
 [![Downloads](https://img.shields.io/crates/d/seance.svg?style=flat-square)](https://crates.io/crates/seance)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat-square)](https://docs.rs/seance)
