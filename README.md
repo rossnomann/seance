@@ -21,6 +21,10 @@ See [tests](https://github.com/rossnomann/seance/tree/master/tests) directory.
 
 # Changelog
 
+## 0.2.0 (04.01.2020)
+
+- Send and Sync for SessionError.
+
 ## 0.1.0 (04.01.2020)
 
 - First release.
