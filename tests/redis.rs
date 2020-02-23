@@ -1,6 +1,3 @@
-#[cfg(not(feature = "redis-backend"))]
-compile_error!("Enable redis-backend feature");
-
 use darkredis::ConnectionPool;
 use seance::{backend::redis::RedisBackend, SessionCollector, SessionManager};
 use std::{

@@ -1,6 +1,6 @@
 [package]
 name = "seance"
-version = "0.2.0"
+version = "0.3.0"
 description = "A session library"
 authors = ["Ross Nomann <rossnomann@protonmail.com>"]
 edition = "2018"
@@ -15,7 +15,7 @@ fs-backend = ["tokio/fs"]
 
 [dependencies]
 async-trait = "0.1"
-darkredis = { version = "0.5", optional = true }
+darkredis = { version = "0.6", optional = true }
 log = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -25,3 +25,11 @@ tokio = { version = "0.2", default-features = false, features = ["sync", "time"]
 [dev-dependencies]
 tempfile = "3.1"
 tokio = { version = "0.2", default-features = false, features = ["sync", "time", "macros"] }
+
+[[test]]
+name = "fs"
+required-features = ["fs-backend"]
+
+[[test]]
+name = "redis"
+required-features = ["redis-backend"]

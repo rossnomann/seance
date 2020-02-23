@@ -1,6 +1,3 @@
-#[cfg(not(feature = "fs-backend"))]
-compile_error!("Enable fs-backend feature");
-
 use seance::{backend::fs::FilesystemBackend, SessionCollector, SessionManager};
 use std::time::Duration;
 use tempfile::tempdir;
