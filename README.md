@@ -12,7 +12,7 @@ A session library written in Rust
 
 ```toml
 [dependencies]
-seance = "0.1"
+seance = "0.3"
 ```
 
 # Example
@@ -20,6 +20,10 @@ seance = "0.1"
 See [tests](https://github.com/rossnomann/seance/tree/master/tests) directory.
 
 # Changelog
+
+## 0.3.0 (23.02.2020)
+
+- Added darkredis 0.6 support.
 
 ## 0.2.0 (04.01.2020)
 
