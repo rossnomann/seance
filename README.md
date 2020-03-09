@@ -21,6 +21,10 @@ See [tests](https://github.com/rossnomann/seance/tree/master/tests) directory.
 
 # Changelog
 
+## 0.4.0 (09.03.2020)
+
+- Added darkredis 0.7 support.
+
 ## 0.3.0 (23.02.2020)
 
 - Added darkredis 0.6 support.
