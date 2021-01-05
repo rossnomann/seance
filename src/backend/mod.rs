@@ -22,7 +22,7 @@ pub trait SessionBackend {
     /// Returns a list of available session IDs
     async fn get_sessions(&mut self) -> Result<Vec<String>, Self::Error>;
 
-    /// Returns session age in seconds
+    /// Returns the time when session was created in seconds
     ///
     /// This method MUST return session age if session exists and None otherwise
     ///
