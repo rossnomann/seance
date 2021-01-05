@@ -41,7 +41,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         name: test
         env:
-          SEANCE_REDIS_ADDRESS: 127.0.0.1:${{ job.services.redis.ports[6379] }}
+          SEANCE_REDIS_ADDRESS: redis://127.0.0.1:${{ job.services.redis.ports[6379] }}
         with:
           command: test
           args: --all-targets --all-features
