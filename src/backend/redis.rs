@@ -1,25 +1,25 @@
 use crate::{backend::SessionBackend, utils::now};
 use async_trait::async_trait;
-use darkredis::{Command, ConnectionPool, Error as DarkredisError};
+use redis::{AsyncCommands, RedisError};
 use snafu::{ResultExt, Snafu};
 use std::{num::ParseIntError, string::FromUtf8Error, time::SystemTimeError};
 
 /// Redis powered session backend
 #[derive(Clone)]
-pub struct RedisBackend {
+pub struct RedisBackend<C> {
     namespace: String,
     sessions_key: String,
-    pool: ConnectionPool,
+    connection: C,
 }
 
-impl RedisBackend {
+impl<C> RedisBackend<C> {
     /// Creates a new backend
     ///
     /// # Arguments
     ///
     /// * namespace - A prefix string for keys
-    /// * pool - A redis connection pool
-    pub fn new<N>(namespace: N, pool: ConnectionPool) -> Self
+    /// * connection - A redis connection manager
+    pub fn new<N>(namespace: N, connection: C) -> Self
     where
         N: Into<String>,
     {
@@ -28,7 +28,7 @@ impl RedisBackend {
         Self {
             namespace,
             sessions_key,
-            pool,
+            connection,
         }
     }
 
@@ -38,47 +38,34 @@ impl RedisBackend {
 }
 
 #[async_trait]
-impl SessionBackend for RedisBackend {
-    type Error = RedisError;
+impl<C> SessionBackend for RedisBackend<C>
+where
+    C: AsyncCommands,
+{
+    type Error = RedisBackendError;
 
     async fn get_sessions(&mut self) -> Result<Vec<String>, Self::Error> {
-        let mut connection = self.pool.get().await;
-        let value = connection
-            .run_command(Command::new("HKEYS").arg(&self.sessions_key))
+        Ok(self
+            .connection
+            .hkeys(&self.sessions_key)
             .await
-            .context(GetSessions)?;
-        let mut result = Vec::new();
-        for session_id in value.unwrap_array() {
-            result.push(String::from_utf8(session_id.unwrap_string()).context(ParseSessionId)?);
-        }
-        Ok(result)
+            .context(GetSessions)?)
     }
 
     async fn get_session_age(&mut self, session_id: &str) -> Result<Option<u64>, Self::Error> {
-        let mut connection = self.pool.get().await;
-        let value = connection
-            .run_command(
-                Command::new("HGET")
-                    .arg(&self.sessions_key)
-                    .arg(&session_id),
-            )
+        Ok(self
+            .connection
+            .hget(&self.sessions_key, session_id)
             .await
-            .context(GetSessionAge)?;
-        Ok(match value.optional_string() {
-            Some(value) => Some(
-                String::from_utf8(value)
-                    .context(SessionAgeFromUtf8)?
-                    .parse::<u64>()
-                    .context(ParseSessionAge)?,
-            ),
-            None => None,
-        })
+            .context(GetSessionAge)?)
     }
 
     async fn remove_session(&mut self, session_id: &str) -> Result<(), Self::Error> {
         let session_key = self.get_session_key(session_id);
-        let mut connection = self.pool.get().await;
-        connection.del(session_key).await.context(RemoveSession)?;
+        self.connection
+            .del(session_key)
+            .await
+            .context(RemoveSession)?;
         Ok(())
     }
 
@@ -88,12 +75,11 @@ impl SessionBackend for RedisBackend {
         key: &str,
     ) -> Result<Option<Vec<u8>>, Self::Error> {
         let session_key = self.get_session_key(session_id);
-        let mut connection = self.pool.get().await;
-        let value = connection
-            .run_command(Command::new("HGET").arg(&session_key).arg(&key))
+        Ok(self
+            .connection
+            .hget(session_key, key)
             .await
-            .context(ReadValue)?;
-        Ok(value.optional_string())
+            .context(ReadValue)?)
     }
 
     async fn write_value(
@@ -103,25 +89,20 @@ impl SessionBackend for RedisBackend {
         value: &[u8],
     ) -> Result<(), Self::Error> {
         let session_key = self.get_session_key(session_id);
-        let mut connection = self.pool.get().await;
-        let len = connection
-            .run_command(Command::new("HLEN").arg(&session_key))
+        let len: i64 = self
+            .connection
+            .hlen(&session_key)
             .await
             .context(WriteValue)?;
-        if len.unwrap_integer() == 0 {
+        if len == 0 {
             let timestamp = format!("{}", now().context(SetSessionTimestamp)?);
-            connection
-                .run_command(
-                    Command::new("HSET")
-                        .arg(&self.sessions_key)
-                        .arg(&session_id)
-                        .arg(&timestamp),
-                )
+            self.connection
+                .hset(&self.sessions_key, session_id, timestamp)
                 .await
                 .context(WriteValue)?;
         }
-        connection
-            .run_command(Command::new("HSET").arg(&session_key).arg(&key).arg(&value))
+        self.connection
+            .hset(session_key, key, value)
             .await
             .context(WriteValue)?;
         Ok(())
@@ -129,9 +110,8 @@ impl SessionBackend for RedisBackend {
 
     async fn remove_value(&mut self, session_id: &str, key: &str) -> Result<(), Self::Error> {
         let session_key = self.get_session_key(session_id);
-        let mut connection = self.pool.get().await;
-        connection
-            .run_command(Command::new("HDEL").arg(&session_key).arg(&key))
+        self.connection
+            .hdel(session_key, key)
             .await
             .context(RemoveValue)?;
         Ok(())
@@ -140,19 +120,19 @@ impl SessionBackend for RedisBackend {
 
 /// An error occurred in redis backend
 #[derive(Debug, Snafu)]
-pub enum RedisError {
+pub enum RedisBackendError {
     /// Failed to get sessions list
     #[snafu(display("failed to get sessions list: {}", source))]
     GetSessions {
         /// Source error
-        source: DarkredisError,
+        source: RedisError,
     },
 
     /// Failed to get session age
     #[snafu(display("failed to get session age: {}", source))]
     GetSessionAge {
         /// Source error
-        source: DarkredisError,
+        source: RedisError,
     },
 
     /// Failed to parse session age
@@ -173,21 +153,21 @@ pub enum RedisError {
     #[snafu(display("failed to read value: {}", source))]
     ReadValue {
         /// Source error
-        source: DarkredisError,
+        source: RedisError,
     },
 
     /// Failed to remove session
     #[snafu(display("failed to remove session: {}", source))]
     RemoveSession {
         /// Source error
-        source: DarkredisError,
+        source: RedisError,
     },
 
     /// Failed to remove value
     #[snafu(display("failed to remove value: {}", source))]
     RemoveValue {
         /// Source error
-        source: DarkredisError,
+        source: RedisError,
     },
 
     /// Failed to read session age
@@ -210,6 +190,6 @@ pub enum RedisError {
     #[snafu(display("failed to write value: {}", source))]
     WriteValue {
         /// Source error
-        source: DarkredisError,
+        source: RedisError,
     },
 }

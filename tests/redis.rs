@@ -1,13 +1,12 @@
-use darkredis::ConnectionPool;
+use redis::Client;
 use seance::{backend::redis::RedisBackend, SessionCollector, SessionManager};
 use std::{
     env::{var, VarError},
     time::Duration,
 };
-use tokio::time::delay_for;
+use tokio::time::sleep;
 
-const CONNECTION_COUNT: usize = 1;
-const DEFAULT_ADDRESS: &str = "127.0.0.1:6379";
+const DEFAULT_ADDRESS: &str = "redis://127.0.0.1:6379";
 
 #[tokio::test]
 async fn redis() {
@@ -17,10 +16,9 @@ async fn redis() {
         Err(err) => panic!("{}", err),
     };
     println!("REDIS ADDRESS: {:?}", address);
-    let pool = ConnectionPool::create(address, None, CONNECTION_COUNT)
-        .await
-        .unwrap();
-    let backend = RedisBackend::new("test-seance", pool);
+    let client = Client::open(DEFAULT_ADDRESS).unwrap();
+    let manager = client.get_multiplexed_tokio_connection().await.unwrap();
+    let backend = RedisBackend::new("test-seance", manager);
     let manager = SessionManager::new(backend.clone());
     let mut session = manager.get_session("session-id");
     session.set("key", &"value").await.unwrap();
@@ -32,7 +30,7 @@ async fn redis() {
     assert!(session.get::<_, String>("key").await.unwrap().is_none());
     session.set("key", &"value").await.unwrap();
     session.expire("key", 1).await.unwrap();
-    delay_for(Duration::from_secs(2)).await;
+    sleep(Duration::from_secs(2)).await;
     assert!(session.get::<_, String>("key").await.unwrap().is_none());
 
     let gc_period = Duration::from_secs(1);
@@ -43,7 +41,7 @@ async fn redis() {
     tokio::spawn(async move {
         collector.run().await;
     });
-    delay_for(Duration::from_secs(2)).await;
+    sleep(Duration::from_secs(2)).await;
     handle.shutdown().await;
     assert!(session.get::<_, String>("key").await.unwrap().is_none());
 }
