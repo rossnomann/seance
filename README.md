@@ -12,7 +12,7 @@ A session library written in Rust
 
 ```toml
 [dependencies]
-seance = "0.3"
+seance = "0.5"
 ```
 
 # Example
@@ -20,6 +20,13 @@ seance = "0.3"
 See [tests](https://github.com/rossnomann/seance/tree/master/tests) directory.
 
 # Changelog
+
+## 0.5.0 (06.01.2020)
+
+- Tokio 1.0 support.
+- Use redis-rs for redis-backend instead of darkredis.
+- Renamed RedisError to RedisBackendError.
+- Renamed FilesystemError to FilesystemBackendError.
 
 ## 0.4.0 (09.03.2020)
 
