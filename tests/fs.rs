@@ -1,7 +1,7 @@
 use seance::{backend::fs::FilesystemBackend, SessionCollector, SessionManager};
 use std::time::Duration;
 use tempfile::tempdir;
-use tokio::time::delay_for;
+use tokio::time::sleep;
 
 #[tokio::test]
 async fn fs() {
@@ -18,7 +18,7 @@ async fn fs() {
     assert!(session.get::<_, String>("key").await.unwrap().is_none());
     session.set("key", &"value").await.unwrap();
     session.expire("key", 1).await.unwrap();
-    delay_for(Duration::from_secs(2)).await;
+    sleep(Duration::from_secs(2)).await;
     assert!(session.get::<_, String>("key").await.unwrap().is_none());
 
     let gc_period = Duration::from_secs(1);
@@ -29,7 +29,7 @@ async fn fs() {
     tokio::spawn(async move {
         collector.run().await;
     });
-    delay_for(Duration::from_secs(2)).await;
+    sleep(Duration::from_secs(2)).await;
     handle.shutdown().await;
     assert!(session.get::<_, String>("key").await.unwrap().is_none());
 }
