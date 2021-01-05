@@ -16,7 +16,7 @@ async fn redis() {
         Err(err) => panic!("{}", err),
     };
     println!("REDIS ADDRESS: {:?}", address);
-    let client = Client::open(DEFAULT_ADDRESS).unwrap();
+    let client = Client::open(address).unwrap();
     let manager = client.get_multiplexed_tokio_connection().await.unwrap();
     let backend = RedisBackend::new("test-seance", manager);
     let manager = SessionManager::new(backend.clone());
