@@ -32,7 +32,7 @@ impl FilesystemBackend {
 
 #[async_trait]
 impl SessionBackend for FilesystemBackend {
-    type Error = FilesystemError;
+    type Error = FilesystemBackendError;
 
     async fn get_sessions(&mut self) -> Result<Vec<String>, Self::Error> {
         let mut result = Vec::new();
@@ -131,7 +131,7 @@ const TIME_MARKER: &str = ".__created";
 struct TimeMarker;
 
 impl TimeMarker {
-    async fn create<P: AsRef<Path>>(root: P) -> Result<(), FilesystemError> {
+    async fn create<P: AsRef<Path>>(root: P) -> Result<(), FilesystemBackendError> {
         let timestamp = now().context(TimeMarkerInitValue)?;
         let timestamp = format!("{}", timestamp);
         fs::write(root.as_ref().join(TIME_MARKER), timestamp)
@@ -140,7 +140,7 @@ impl TimeMarker {
         Ok(())
     }
 
-    async fn read<P: AsRef<Path>>(root: P) -> Result<u64, FilesystemError> {
+    async fn read<P: AsRef<Path>>(root: P) -> Result<u64, FilesystemBackendError> {
         let data = fs::read(root.as_ref().join(TIME_MARKER))
             .await
             .context(TimeMarkerRead)?;
@@ -152,7 +152,7 @@ impl TimeMarker {
 
 /// An error occurred in filesystem backend
 #[derive(Debug, Snafu)]
-pub enum FilesystemError {
+pub enum FilesystemBackendError {
     /// Failed to get sessions list
     #[snafu(display("failed to get sessions list: {}", source))]
     GetSessions {
@@ -245,7 +245,7 @@ pub enum FilesystemError {
     },
 }
 
-async fn is_session_root_exists<P: AsRef<Path>>(path: P) -> Result<bool, FilesystemError> {
+async fn is_session_root_exists<P: AsRef<Path>>(path: P) -> Result<bool, FilesystemBackendError> {
     let path = path.as_ref();
     match fs::metadata(&path).await {
         Ok(meta) => {
