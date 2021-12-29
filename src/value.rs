@@ -13,7 +13,7 @@ pub struct Value {
 impl Value {
     /// Returns a parsed value
     pub fn into_parsed<T: DeserializeOwned>(mut self) -> Result<T, JsonError> {
-        Ok(serde_json::from_value(self.value.take())?)
+        serde_json::from_value(self.value.take())
     }
 
     /// Sets value lifetime in seconds from now
