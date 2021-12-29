@@ -12,7 +12,7 @@ A session library written in Rust
 
 ```toml
 [dependencies]
-seance = "0.5"
+seance = "0.6"
 ```
 
 # Example
@@ -20,6 +20,11 @@ seance = "0.5"
 See [tests](https://github.com/rossnomann/seance/tree/master/tests) directory.
 
 # Changelog
+
+## 0.6.0 (29.12.2021)
+
+- Tokio 1.15
+- Redis 0.21
 
 ## 0.5.0 (06.01.2020)
 
