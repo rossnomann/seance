@@ -1,5 +1,4 @@
 use crate::{backend::SessionBackend, utils::now};
-use futures_util::future::FutureExt;
 use std::time::Duration;
 use tokio::{
     sync::mpsc::{channel, Receiver, Sender},
@@ -76,9 +75,7 @@ where
     pub async fn run(&mut self) {
         let mut interval = interval(self.period);
         loop {
-            // TODO: use self.receiver.try_recv().is_ok() when this method will be available again
-            // See https://github.com/tokio-rs/tokio/issues/3350
-            if self.receiver.recv().now_or_never().is_some() {
+            if self.receiver.try_recv().is_ok() {
                 self.receiver.close();
                 break;
             }
