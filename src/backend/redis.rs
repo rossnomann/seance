@@ -1,8 +1,7 @@
 use crate::{backend::SessionBackend, utils::now};
 use async_trait::async_trait;
 use redis::{AsyncCommands, RedisError};
-use snafu::{ResultExt, Snafu};
-use std::{num::ParseIntError, string::FromUtf8Error, time::SystemTimeError};
+use std::{error::Error, fmt, num::ParseIntError, string::FromUtf8Error, time::SystemTimeError};
 
 /// Redis powered session backend
 #[derive(Clone)]
@@ -49,7 +48,7 @@ where
             .connection
             .hkeys(&self.sessions_key)
             .await
-            .context(GetSessions)?)
+            .map_err(RedisBackendError::GetSessions)?)
     }
 
     async fn get_session_age(&mut self, session_id: &str) -> Result<Option<u64>, Self::Error> {
@@ -57,7 +56,7 @@ where
             .connection
             .hget(&self.sessions_key, session_id)
             .await
-            .context(GetSessionAge)?)
+            .map_err(RedisBackendError::GetSessionAge)?)
     }
 
     async fn remove_session(&mut self, session_id: &str) -> Result<(), Self::Error> {
@@ -65,7 +64,7 @@ where
         self.connection
             .del(session_key)
             .await
-            .context(RemoveSession)?;
+            .map_err(RedisBackendError::RemoveSession)?;
         Ok(())
     }
 
@@ -79,7 +78,7 @@ where
             .connection
             .hget(session_key, key)
             .await
-            .context(ReadValue)?)
+            .map_err(RedisBackendError::ReadValue)?)
     }
 
     async fn write_value(
@@ -93,18 +92,18 @@ where
             .connection
             .hlen(&session_key)
             .await
-            .context(WriteValue)?;
+            .map_err(RedisBackendError::WriteValue)?;
         if len == 0 {
-            let timestamp = format!("{}", now().context(SetSessionTimestamp)?);
+            let timestamp = format!("{}", now().map_err(RedisBackendError::SetSessionTimestamp)?);
             self.connection
                 .hset(&self.sessions_key, session_id, timestamp)
                 .await
-                .context(WriteValue)?;
+                .map_err(RedisBackendError::WriteValue)?;
         }
         self.connection
             .hset(session_key, key, value)
             .await
-            .context(WriteValue)?;
+            .map_err(RedisBackendError::WriteValue)?;
         Ok(())
     }
 
@@ -113,83 +112,70 @@ where
         self.connection
             .hdel(session_key, key)
             .await
-            .context(RemoveValue)?;
+            .map_err(RedisBackendError::RemoveValue)?;
         Ok(())
     }
 }
 
 /// An error occurred in redis backend
-#[derive(Debug, Snafu)]
+#[derive(Debug)]
 pub enum RedisBackendError {
     /// Failed to get sessions list
-    #[snafu(display("failed to get sessions list: {}", source))]
-    GetSessions {
-        /// Source error
-        source: RedisError,
-    },
-
+    GetSessions(RedisError),
     /// Failed to get session age
-    #[snafu(display("failed to get session age: {}", source))]
-    GetSessionAge {
-        /// Source error
-        source: RedisError,
-    },
-
+    GetSessionAge(RedisError),
     /// Failed to parse session age
-    #[snafu(display("session age contains non-integer value: {}", source))]
-    ParseSessionAge {
-        /// Source error
-        source: ParseIntError,
-    },
-
+    ParseSessionAge(ParseIntError),
     /// Failed to parse session ID
-    #[snafu(display("session id contains non-utf8 string: {}", source))]
-    ParseSessionId {
-        /// Source error
-        source: FromUtf8Error,
-    },
-
+    ParseSessionId(FromUtf8Error),
     /// Failed to read value
-    #[snafu(display("failed to read value: {}", source))]
-    ReadValue {
-        /// Source error
-        source: RedisError,
-    },
-
+    ReadValue(RedisError),
     /// Failed to remove session
-    #[snafu(display("failed to remove session: {}", source))]
-    RemoveSession {
-        /// Source error
-        source: RedisError,
-    },
-
+    RemoveSession(RedisError),
     /// Failed to remove value
-    #[snafu(display("failed to remove value: {}", source))]
-    RemoveValue {
-        /// Source error
-        source: RedisError,
-    },
-
+    RemoveValue(RedisError),
     /// Failed to read session age
-    #[snafu(display("session age contains non-utf8 string: {}", source))]
-    SessionAgeFromUtf8 {
-        /// Source error
-        source: FromUtf8Error,
-    },
-
+    SessionAgeFromUtf8(FromUtf8Error),
     /// Failed to set session timestamp
     ///
     /// An error occurred when getting system time
-    #[snafu(display("failed to set session timestamp: {}", source))]
-    SetSessionTimestamp {
-        /// Source error
-        source: SystemTimeError,
-    },
-
+    SetSessionTimestamp(SystemTimeError),
     /// Failed to write value
-    #[snafu(display("failed to write value: {}", source))]
-    WriteValue {
-        /// Source error
-        source: RedisError,
-    },
+    WriteValue(RedisError),
+}
+
+impl fmt::Display for RedisBackendError {
+    fn fmt(&self, out: &mut fmt::Formatter) -> fmt::Result {
+        use self::RedisBackendError::*;
+        match self {
+            GetSessions(err) => write!(out, "failed to get sessions list: {}", err),
+            GetSessionAge(err) => write!(out, "failed to get session age: {}", err),
+            ParseSessionAge(err) => write!(out, "session age contains non-integer value: {}", err),
+            ParseSessionId(err) => write!(out, "session id contains non-utf8 string: {}", err),
+            ReadValue(err) => write!(out, "failed to read value: {}", err),
+            RemoveSession(err) => write!(out, "failed to remove session: {}", err),
+            RemoveValue(err) => write!(out, "failed to remove value: {}", err),
+            SessionAgeFromUtf8(err) => write!(out, "session age contains non-utf8 string: {}", err),
+            SetSessionTimestamp(err) => write!(out, "failed to set session timestamp: {}", err),
+            WriteValue(err) => write!(out, "failed to write value: {}", err),
+        }
+    }
+}
+
+impl Error for RedisBackendError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        use self::RedisBackendError::*;
+        Some(match self {
+            GetSessions(err) => err,
+            GetSessionAge(err) => err,
+            ParseSessionAge(err) => err,
+            ParseSessionId(err) => err,
+            ReadValue(err) => err,
+            RemoveSession(err) => err,
+            RemoveValue(err) => err,
+            SessionAgeFromUtf8(err) => err,
+            SetSessionTimestamp(err) => err,
+            WriteValue(err) => err,
+        })
+    }
 }
