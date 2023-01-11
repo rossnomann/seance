@@ -3,14 +3,12 @@ use std::error::Error;
 use async_trait::async_trait;
 
 /// Filesystem backend
-///
-/// Available with enabled `fs-backend` feature
+#[cfg_attr(nightly, doc(cfg(feature = "fs-backend")))]
 #[cfg(feature = "fs-backend")]
 pub mod fs;
 
 /// Redis backend
-///
-/// Available with enabled `redis-backend` feature
+#[cfg_attr(nightly, doc(cfg(feature = "redis-backend")))]
 #[cfg(feature = "redis-backend")]
 pub mod redis;
 

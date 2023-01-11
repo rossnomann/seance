@@ -33,3 +33,7 @@ required-features = ["fs-backend"]
 [[test]]
 name = "redis"
 required-features = ["redis-backend"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "nightly"]
