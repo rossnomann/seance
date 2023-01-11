@@ -1,5 +1,6 @@
-use async_trait::async_trait;
 use std::error::Error;
+
+use async_trait::async_trait;
 
 /// Filesystem backend
 ///
@@ -42,11 +43,7 @@ pub trait SessionBackend {
     ///
     /// * session_id - ID of a session
     /// * key - Key to read value from
-    async fn read_value(
-        &mut self,
-        session_id: &str,
-        key: &str,
-    ) -> Result<Option<Vec<u8>>, Self::Error>;
+    async fn read_value(&mut self, session_id: &str, key: &str) -> Result<Option<Vec<u8>>, Self::Error>;
 
     /// Write a value to store
     ///
@@ -55,12 +52,7 @@ pub trait SessionBackend {
     /// * session_id - ID of a session
     /// * key - Key to write value to
     /// * value - Value to write
-    async fn write_value(
-        &mut self,
-        session_id: &str,
-        key: &str,
-        value: &[u8],
-    ) -> Result<(), Self::Error>;
+    async fn write_value(&mut self, session_id: &str, key: &str, value: &[u8]) -> Result<(), Self::Error>;
 
     /// Remove a value from store
     ///

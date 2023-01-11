@@ -1,7 +1,9 @@
-use seance::{backend::fs::FilesystemBackend, SessionCollector, SessionManager};
 use std::time::Duration;
+
 use tempfile::tempdir;
 use tokio::time::sleep;
+
+use seance::{backend::fs::FilesystemBackend, SessionCollector, SessionManager};
 
 #[tokio::test]
 async fn fs() {
@@ -10,10 +12,7 @@ async fn fs() {
     let manager = SessionManager::new(backend.clone());
     let mut session = manager.get_session("session-id");
     session.set("key", &"value").await.unwrap();
-    assert_eq!(
-        "value",
-        session.get::<_, String>("key").await.unwrap().unwrap()
-    );
+    assert_eq!("value", session.get::<_, String>("key").await.unwrap().unwrap());
     session.remove("key").await.unwrap();
     assert!(session.get::<_, String>("key").await.unwrap().is_none());
     session.set("key", &"value").await.unwrap();

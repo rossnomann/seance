@@ -1,12 +1,14 @@
+use std::{error::Error, fmt, sync::Arc, time::SystemTimeError};
+
+use serde::{de::DeserializeOwned, Serialize};
+use serde_json::Error as JsonError;
+use tokio::sync::Mutex;
+
 use crate::{
     backend::SessionBackend,
     utils::{decode_value, encode_value},
     value::{Value, ValueRef},
 };
-use serde::{de::DeserializeOwned, Serialize};
-use serde_json::Error as JsonError;
-use std::{error::Error, fmt, sync::Arc, time::SystemTimeError};
-use tokio::sync::Mutex;
 
 /// Actual session
 #[derive(Clone)]
@@ -23,10 +25,7 @@ where
     where
         I: Into<String>,
     {
-        Self {
-            id: id.into(),
-            backend,
-        }
+        Self { id: id.into(), backend }
     }
 
     async fn read_value(&mut self, key: &str) -> Result<Option<Value>, SessionError> {
@@ -80,11 +79,7 @@ where
         O: DeserializeOwned,
     {
         Ok(
-            if let Some(value) = self
-                .read_value(key.as_ref())
-                .await
-                .map_err(SessionError::backend)?
-            {
+            if let Some(value) = self.read_value(key.as_ref()).await.map_err(SessionError::backend)? {
                 if value.is_expired().map_err(SessionError::CheckExpired)? {
                     None
                 } else {
@@ -103,12 +98,8 @@ where
     {
         let key = key.as_ref();
         if let Some(mut value) = self.read_value(key).await.map_err(SessionError::backend)? {
-            value
-                .set_lifetime(seconds)
-                .map_err(SessionError::ExpireValue)?;
-            self.write_value(key, value)
-                .await
-                .map_err(SessionError::backend)?;
+            value.set_lifetime(seconds).map_err(SessionError::ExpireValue)?;
+            self.write_value(key, value).await.map_err(SessionError::backend)?;
         }
         Ok(())
     }
@@ -165,14 +156,14 @@ impl Error for SessionError {
 impl fmt::Display for SessionError {
     fn fmt(&self, out: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            SessionError::Backend(err) => write!(out, "backend error: {}", err),
+            SessionError::Backend(err) => write!(out, "backend error: {err}"),
             SessionError::CheckExpired(err) => {
-                write!(out, "failed to check whether value expired: {}", err)
+                write!(out, "failed to check whether value expired: {err}")
             }
-            SessionError::DecodeValue(err) => write!(out, "failed to decode value: {}", err),
-            SessionError::EncodeValue(err) => write!(out, "failed to encode value: {}", err),
-            SessionError::ExpireValue(err) => write!(out, "failed to expire value: {}", err),
-            SessionError::ParseValue(err) => write!(out, "failed to parse value: {}", err),
+            SessionError::DecodeValue(err) => write!(out, "failed to decode value: {err}"),
+            SessionError::EncodeValue(err) => write!(out, "failed to encode value: {err}"),
+            SessionError::ExpireValue(err) => write!(out, "failed to expire value: {err}"),
+            SessionError::ParseValue(err) => write!(out, "failed to parse value: {err}"),
         }
     }
 }

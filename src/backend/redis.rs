@@ -1,7 +1,9 @@
-use crate::{backend::SessionBackend, utils::now};
+use std::{error::Error, fmt, num::ParseIntError, string::FromUtf8Error, time::SystemTimeError};
+
 use async_trait::async_trait;
 use redis::{AsyncCommands, RedisError};
-use std::{error::Error, fmt, num::ParseIntError, string::FromUtf8Error, time::SystemTimeError};
+
+use crate::{backend::SessionBackend, utils::now};
 
 /// Redis powered session backend
 #[derive(Clone)]
@@ -23,7 +25,7 @@ impl<C> RedisBackend<C> {
         N: Into<String>,
     {
         let namespace = namespace.into();
-        let sessions_key = format!("{}:__seance_sessions", namespace);
+        let sessions_key = format!("{namespace}:__seance_sessions");
         Self {
             namespace,
             sessions_key,
@@ -44,19 +46,17 @@ where
     type Error = RedisBackendError;
 
     async fn get_sessions(&mut self) -> Result<Vec<String>, Self::Error> {
-        Ok(self
-            .connection
+        self.connection
             .hkeys(&self.sessions_key)
             .await
-            .map_err(RedisBackendError::GetSessions)?)
+            .map_err(RedisBackendError::GetSessions)
     }
 
     async fn get_session_age(&mut self, session_id: &str) -> Result<Option<u64>, Self::Error> {
-        Ok(self
-            .connection
+        self.connection
             .hget(&self.sessions_key, session_id)
             .await
-            .map_err(RedisBackendError::GetSessionAge)?)
+            .map_err(RedisBackendError::GetSessionAge)
     }
 
     async fn remove_session(&mut self, session_id: &str) -> Result<(), Self::Error> {
@@ -68,25 +68,18 @@ where
         Ok(())
     }
 
-    async fn read_value(
-        &mut self,
-        session_id: &str,
-        key: &str,
-    ) -> Result<Option<Vec<u8>>, Self::Error> {
+    async fn read_value(&mut self, session_id: &str, key: &str) -> Result<Option<Vec<u8>>, Self::Error> {
         let session_key = self.get_session_key(session_id);
-        Ok(self
+        // Use additional variable because trait bound for FromRedisValue is not satisfied for some reason
+        let result: Option<Vec<u8>> = self
             .connection
             .hget(session_key, key)
             .await
-            .map_err(RedisBackendError::ReadValue)?)
+            .map_err(RedisBackendError::ReadValue)?;
+        Ok(result)
     }
 
-    async fn write_value(
-        &mut self,
-        session_id: &str,
-        key: &str,
-        value: &[u8],
-    ) -> Result<(), Self::Error> {
+    async fn write_value(&mut self, session_id: &str, key: &str, value: &[u8]) -> Result<(), Self::Error> {
         let session_key = self.get_session_key(session_id);
         let len: i64 = self
             .connection
@@ -148,16 +141,16 @@ impl fmt::Display for RedisBackendError {
     fn fmt(&self, out: &mut fmt::Formatter) -> fmt::Result {
         use self::RedisBackendError::*;
         match self {
-            GetSessions(err) => write!(out, "failed to get sessions list: {}", err),
-            GetSessionAge(err) => write!(out, "failed to get session age: {}", err),
-            ParseSessionAge(err) => write!(out, "session age contains non-integer value: {}", err),
-            ParseSessionId(err) => write!(out, "session id contains non-utf8 string: {}", err),
-            ReadValue(err) => write!(out, "failed to read value: {}", err),
-            RemoveSession(err) => write!(out, "failed to remove session: {}", err),
-            RemoveValue(err) => write!(out, "failed to remove value: {}", err),
-            SessionAgeFromUtf8(err) => write!(out, "session age contains non-utf8 string: {}", err),
-            SetSessionTimestamp(err) => write!(out, "failed to set session timestamp: {}", err),
-            WriteValue(err) => write!(out, "failed to write value: {}", err),
+            GetSessions(err) => write!(out, "failed to get sessions list: {err}"),
+            GetSessionAge(err) => write!(out, "failed to get session age: {err}"),
+            ParseSessionAge(err) => write!(out, "session age contains non-integer value: {err}"),
+            ParseSessionId(err) => write!(out, "session id contains non-utf8 string: {err}"),
+            ReadValue(err) => write!(out, "failed to read value: {err}"),
+            RemoveSession(err) => write!(out, "failed to remove session: {err}"),
+            RemoveValue(err) => write!(out, "failed to remove value: {err}"),
+            SessionAgeFromUtf8(err) => write!(out, "session age contains non-utf8 string: {err}"),
+            SetSessionTimestamp(err) => write!(out, "failed to set session timestamp: {err}"),
+            WriteValue(err) => write!(out, "failed to write value: {err}"),
         }
     }
 }

@@ -1,5 +1,3 @@
-use crate::{backend::SessionBackend, utils::now};
-use async_trait::async_trait;
 use std::{
     error::Error,
     ffi::OsString,
@@ -10,7 +8,11 @@ use std::{
     string::FromUtf8Error,
     time::SystemTimeError,
 };
+
+use async_trait::async_trait;
 use tokio::fs;
+
+use crate::{backend::SessionBackend, utils::now};
 
 /// Filesystem session backend
 #[derive(Clone)]
@@ -91,11 +93,7 @@ impl SessionBackend for FilesystemBackend {
         Ok(())
     }
 
-    async fn read_value(
-        &mut self,
-        session_id: &str,
-        key: &str,
-    ) -> Result<Option<Vec<u8>>, Self::Error> {
+    async fn read_value(&mut self, session_id: &str, key: &str) -> Result<Option<Vec<u8>>, Self::Error> {
         let session_root = self.root.clone().join(session_id);
         if is_session_root_exists(&session_root).await? {
             match fs::read(session_root.join(key)).await {
@@ -110,12 +108,7 @@ impl SessionBackend for FilesystemBackend {
         }
     }
 
-    async fn write_value(
-        &mut self,
-        session_id: &str,
-        key: &str,
-        value: &[u8],
-    ) -> Result<(), Self::Error> {
+    async fn write_value(&mut self, session_id: &str, key: &str, value: &[u8]) -> Result<(), Self::Error> {
         let session_root = self.root.clone().join(session_id);
         if !is_session_root_exists(&session_root).await? {
             fs::create_dir_all(&session_root)
@@ -150,7 +143,7 @@ struct TimeMarker;
 impl TimeMarker {
     async fn create<P: AsRef<Path>>(root: P) -> Result<(), FilesystemBackendError> {
         let timestamp = now().map_err(FilesystemBackendError::TimeMarkerInitValue)?;
-        let timestamp = format!("{}", timestamp);
+        let timestamp = format!("{timestamp}");
         fs::write(root.as_ref().join(TIME_MARKER), timestamp)
             .await
             .map_err(FilesystemBackendError::TimeMarkerCreate)?;
@@ -176,9 +169,7 @@ async fn is_session_root_exists<P: AsRef<Path>>(path: P) -> Result<bool, Filesys
             if meta.is_dir() {
                 Ok(true)
             } else {
-                Err(FilesystemBackendError::SessionRootOccupied(
-                    path.to_path_buf(),
-                ))
+                Err(FilesystemBackendError::SessionRootOccupied(path.to_path_buf()))
             }
         }
         Err(error) => match error.kind() {
@@ -236,29 +227,29 @@ impl fmt::Display for FilesystemBackendError {
     fn fmt(&self, out: &mut fmt::Formatter) -> fmt::Result {
         use self::FilesystemBackendError::*;
         match self {
-            GetSessions(err) => write!(out, "failed to get sessions list: {}", err),
-            GetSessionName(name) => write!(out, "failed to get session name: {:?}", name),
-            ReadValue(err) => write!(out, "failed to read a value: {}", err),
-            RemoveSession(err) => write!(out, "failed to remove session: {}", err),
-            RemoveValue(err) => write!(out, "failed to remove a value: {}", err),
+            GetSessions(err) => write!(out, "failed to get sessions list: {err}"),
+            GetSessionName(name) => write!(out, "failed to get session name: {name:?}"),
+            ReadValue(err) => write!(out, "failed to read a value: {err}"),
+            RemoveSession(err) => write!(out, "failed to remove session: {err}"),
+            RemoveValue(err) => write!(out, "failed to remove a value: {err}"),
             SessionRootMetadata(err) => {
-                write!(out, "failed to get session root metadata: {}", err)
+                write!(out, "failed to get session root metadata: {err}")
             }
             SessionRootOccupied(path) => {
                 write!(out, "session root '{}' is occupied", path.display())
             }
-            TimeMarkerCreate(err) => write!(out, "failed to create time marker: {}", err),
+            TimeMarkerCreate(err) => write!(out, "failed to create time marker: {err}"),
             TimeMarkerInitValue(err) => {
-                write!(out, "failed to initialize value for time marker: {}", err)
+                write!(out, "failed to initialize value for time marker: {err}")
             }
             TimeMarkerGetString(err) => {
-                write!(out, "time marker contains non UTF-8 string: {}", err)
+                write!(out, "time marker contains non UTF-8 string: {err}")
             }
             TimeMarkerParseValue(err) => {
-                write!(out, "failed to parse time marker value: {}", err)
+                write!(out, "failed to parse time marker value: {err}")
             }
-            TimeMarkerRead(err) => write!(out, "failed to read time marker data: {}", err),
-            WriteValue(err) => write!(out, "failed to write a value: {}", err),
+            TimeMarkerRead(err) => write!(out, "failed to read time marker data: {err}"),
+            WriteValue(err) => write!(out, "failed to write a value: {err}"),
         }
     }
 }

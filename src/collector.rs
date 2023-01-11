@@ -1,9 +1,11 @@
-use crate::{backend::SessionBackend, utils::now};
 use std::time::Duration;
+
 use tokio::{
     sync::mpsc::{channel, Receiver, Sender},
     time::interval,
 };
+
+use crate::{backend::SessionBackend, utils::now};
 
 /// Garbage collector for sessions
 pub struct SessionCollector<B> {
@@ -47,11 +49,7 @@ where
 
     async fn collect(&mut self) -> Result<(), String> {
         let lifetime = self.lifetime.as_secs();
-        let session_ids = self
-            .backend
-            .get_sessions()
-            .await
-            .map_err(|err| err.to_string())?;
+        let session_ids = self.backend.get_sessions().await.map_err(|err| err.to_string())?;
         let timestamp = now().map_err(|err| err.to_string())?;
         for session_id in session_ids {
             if let Some(age) = self

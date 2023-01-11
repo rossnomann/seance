@@ -1,10 +1,12 @@
-use redis::Client;
-use seance::{backend::redis::RedisBackend, SessionCollector, SessionManager};
 use std::{
     env::{var, VarError},
     time::Duration,
 };
+
+use redis::Client;
 use tokio::time::sleep;
+
+use seance::{backend::redis::RedisBackend, SessionCollector, SessionManager};
 
 const DEFAULT_ADDRESS: &str = "redis://127.0.0.1:6379";
 
@@ -22,10 +24,7 @@ async fn redis() {
     let manager = SessionManager::new(backend.clone());
     let mut session = manager.get_session("session-id");
     session.set("key", &"value").await.unwrap();
-    assert_eq!(
-        "value",
-        session.get::<_, String>("key").await.unwrap().unwrap()
-    );
+    assert_eq!("value", session.get::<_, String>("key").await.unwrap().unwrap());
     session.remove("key").await.unwrap();
     assert!(session.get::<_, String>("key").await.unwrap().is_none());
     session.set("key", &"value").await.unwrap();
