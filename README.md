@@ -2,7 +2,7 @@
 
 A session library written in Rust
 
-[![CI](https://img.shields.io/github/workflow/status/rossnomann/seance/CI?style=flat-square)](https://github.com/rossnomann/seance/actions/)
+[![CI](https://img.shields.io/github/actions/workflow/status/rossnomann/seance/ci.yml?style=flat-square)](https://github.com/rossnomann/seance/actions/)
 [![Version](https://img.shields.io/crates/v/seance.svg?style=flat-square)](https://crates.io/crates/seance)
 [![Downloads](https://img.shields.io/crates/d/seance.svg?style=flat-square)](https://crates.io/crates/seance)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat-square)](https://docs.rs/seance)
@@ -24,7 +24,7 @@ See [tests](https://github.com/rossnomann/seance/tree/0.7.0/tests) directory.
 ## 0.7.0 (02.02.2022)
 
 - Tokio 1.16.
-- Removed snafu dependecy.
+- Removed snafu dependency.
 
 ## 0.6.0 (29.12.2021)
 
