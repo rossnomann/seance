@@ -10,7 +10,7 @@ documentation = "https://docs.rs/seance"
 repository = "https://github.com/rossnomann/seance"
 
 [features]
-redis-backend = ["redis"]
+redis-backend = ["dep:redis"]
 fs-backend = ["tokio/fs"]
 
 [dependencies]
