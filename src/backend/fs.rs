@@ -9,7 +9,6 @@ use std::{
     time::SystemTimeError,
 };
 
-use async_trait::async_trait;
 use tokio::fs;
 
 use crate::{backend::SessionBackend, utils::now};
@@ -33,7 +32,6 @@ impl FilesystemBackend {
     }
 }
 
-#[async_trait]
 impl SessionBackend for FilesystemBackend {
     type Error = FilesystemBackendError;
 

@@ -1,6 +1,5 @@
 use std::{error::Error, fmt, num::ParseIntError, string::FromUtf8Error, time::SystemTimeError};
 
-use async_trait::async_trait;
 use redis::{AsyncCommands, RedisError};
 
 use crate::{backend::SessionBackend, utils::now};
@@ -38,7 +37,6 @@ impl<C> RedisBackend<C> {
     }
 }
 
-#[async_trait]
 impl<C> SessionBackend for RedisBackend<C>
 where
     C: AsyncCommands,

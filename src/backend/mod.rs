@@ -1,6 +1,4 @@
-use std::error::Error;
-
-use async_trait::async_trait;
+use std::{error::Error, future::Future};
 
 /// Filesystem backend
 #[cfg_attr(nightly, doc(cfg(feature = "fs-backend")))]
@@ -13,13 +11,12 @@ pub mod fs;
 pub mod redis;
 
 /// A session backend interface
-#[async_trait]
 pub trait SessionBackend {
     /// An error occurred in backend
     type Error: Error + Send + Sync + 'static;
 
     /// Returns a list of available session IDs
-    async fn get_sessions(&mut self) -> Result<Vec<String>, Self::Error>;
+    fn get_sessions(&mut self) -> impl Future<Output = Result<Vec<String>, Self::Error>> + Send;
 
     /// Returns the time when session was created in seconds
     ///
@@ -28,20 +25,24 @@ pub trait SessionBackend {
     /// # Arguments
     ///
     /// * session_id - ID of a session
-    async fn get_session_age(&mut self, session_id: &str) -> Result<Option<u64>, Self::Error>;
+    fn get_session_age(&mut self, session_id: &str) -> impl Future<Output = Result<Option<u64>, Self::Error>> + Send;
 
     /// Removes a session
     ///
     /// # Arguments
     ///
     /// * session_id - ID of a session
-    async fn remove_session(&mut self, session_id: &str) -> Result<(), Self::Error>;
+    fn remove_session(&mut self, session_id: &str) -> impl Future<Output = Result<(), Self::Error>> + Send;
 
     /// Read a value from store
     ///
     /// * session_id - ID of a session
     /// * key - Key to read value from
-    async fn read_value(&mut self, session_id: &str, key: &str) -> Result<Option<Vec<u8>>, Self::Error>;
+    fn read_value(
+        &mut self,
+        session_id: &str,
+        key: &str,
+    ) -> impl Future<Output = Result<Option<Vec<u8>>, Self::Error>> + Send;
 
     /// Write a value to store
     ///
@@ -50,11 +51,16 @@ pub trait SessionBackend {
     /// * session_id - ID of a session
     /// * key - Key to write value to
     /// * value - Value to write
-    async fn write_value(&mut self, session_id: &str, key: &str, value: &[u8]) -> Result<(), Self::Error>;
+    fn write_value(
+        &mut self,
+        session_id: &str,
+        key: &str,
+        value: &[u8],
+    ) -> impl Future<Output = Result<(), Self::Error>> + Send;
 
     /// Remove a value from store
     ///
     /// * session_id - ID of a session
     /// * key - Key to read value from
-    async fn remove_value(&mut self, session_id: &str, key: &str) -> Result<(), Self::Error>;
+    fn remove_value(&mut self, session_id: &str, key: &str) -> impl Future<Output = Result<(), Self::Error>> + Send;
 }
