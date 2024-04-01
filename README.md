@@ -6,20 +6,25 @@ A session library written in Rust
 [![Version](https://img.shields.io/crates/v/seance.svg?style=flat-square)](https://crates.io/crates/seance)
 [![Downloads](https://img.shields.io/crates/d/seance.svg?style=flat-square)](https://crates.io/crates/seance)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat-square)](https://docs.rs/seance)
-[![License](https://img.shields.io/crates/l/seance.svg?style=flat-square)](https://github.com/rossnomann/seance/tree/0.10.0/LICENSE)
+[![License](https://img.shields.io/crates/l/seance.svg?style=flat-square)](https://github.com/rossnomann/seance/tree/0.11.0/LICENSE)
 
 # Installation
 
 ```toml
 [dependencies]
-seance = "0.10.0"
+seance = "0.11.0"
 ```
 
 # Example
 
-See [tests](https://github.com/rossnomann/seance/tree/0.10.0/tests) directory.
+See [tests](https://github.com/rossnomann/seance/tree/0.11.0/tests) directory.
 
 # Changelog
+
+## 0.11.0 (01.04.2024)
+
+- Tokio 1.37
+- Redis 0.25
 
 ## 0.10.0 (18.02.2024)
 
