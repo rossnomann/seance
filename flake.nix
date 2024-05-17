@@ -11,12 +11,28 @@
       let
         overlays = [ inputs.rust-overlay.overlays.default ];
         pkgs = import inputs.nixpkgs { inherit system overlays; };
-        rust = pkgs.rust-bin.stable.latest.default;
-        rust-analyzer = pkgs.rust-analyzer;
       in
       {
         devShells.default = pkgs.mkShell {
-          buildInputs = [ rust rust-analyzer ];
+          buildInputs = [
+            (pkgs.lib.hiPrio (
+              pkgs.rust-bin.stable.latest.minimal.override {
+                extensions = [
+                  "rust-docs"
+                  "clippy"
+                ];
+              }
+            ))
+            (pkgs.rust-bin.selectLatestNightlyWith (
+              toolchain:
+              toolchain.minimal.override {
+                extensions = [
+                  "rust-analyzer"
+                  "rustfmt"
+                ];
+              }
+            ))
+          ];
           shellHook = ''
             export CARGO_HOME="$PWD/.cargo"
             export PATH="$CARGO_HOME/bin:$PATH"
