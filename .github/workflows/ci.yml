@@ -21,7 +21,7 @@ jobs:
         ports:
           - 6379/tcp
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{matrix.rust}}
