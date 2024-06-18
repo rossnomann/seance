@@ -62,8 +62,7 @@ where
         self.connection
             .del(session_key)
             .await
-            .map_err(RedisBackendError::RemoveSession)?;
-        Ok(())
+            .map_err(RedisBackendError::RemoveSession)
     }
 
     async fn read_value(&mut self, session_id: &str, key: &str) -> Result<Option<Vec<u8>>, Self::Error> {
@@ -94,8 +93,7 @@ where
         self.connection
             .hset(session_key, key, value)
             .await
-            .map_err(RedisBackendError::WriteValue)?;
-        Ok(())
+            .map_err(RedisBackendError::WriteValue)
     }
 
     async fn remove_value(&mut self, session_id: &str, key: &str) -> Result<(), Self::Error> {
@@ -103,8 +101,7 @@ where
         self.connection
             .hdel(session_key, key)
             .await
-            .map_err(RedisBackendError::RemoveValue)?;
-        Ok(())
+            .map_err(RedisBackendError::RemoveValue)
     }
 }
 
