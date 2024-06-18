@@ -36,3 +36,6 @@ required-features = ["redis-backend"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "nightly"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(nightly)'] }
