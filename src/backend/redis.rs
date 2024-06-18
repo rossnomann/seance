@@ -85,7 +85,8 @@ where
             .map_err(RedisBackendError::WriteValue)?;
         if len == 0 {
             let timestamp = format!("{}", now().map_err(RedisBackendError::SetSessionTimestamp)?);
-            self.connection
+            let _: () = self
+                .connection
                 .hset(&self.sessions_key, session_id, timestamp)
                 .await
                 .map_err(RedisBackendError::WriteValue)?;
