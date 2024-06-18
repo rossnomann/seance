@@ -1,6 +1,6 @@
 # SEANCE
 
-A session library written in Rust
+A session library.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/rossnomann/seance/ci.yml?style=flat-square)](https://github.com/rossnomann/seance/actions/)
 [![Version](https://img.shields.io/crates/v/seance.svg?style=flat-square)](https://crates.io/crates/seance)
@@ -12,14 +12,18 @@ A session library written in Rust
 
 ```toml
 [dependencies]
-seance = "0.11.0"
+seance = "0.12.0"
 ```
 
 # Example
 
-See [tests](https://github.com/rossnomann/seance/tree/0.11.0/tests) directory.
+See [tests](https://github.com/rossnomann/seance/tree/0.12.0/tests) directory.
 
 # Changelog
+
+## 0.12.0 (18.06.2024)
+
+- Tokio 1.38
 
 ## 0.11.0 (01.04.2024)
 
