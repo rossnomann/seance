@@ -12,14 +12,19 @@ A session library.
 
 ```toml
 [dependencies]
-seance = "0.12.0"
+seance = "0.13.0"
 ```
 
 # Example
 
-See [tests](https://github.com/rossnomann/seance/tree/0.12.0/tests) directory.
+See [tests](https://github.com/rossnomann/seance/tree/0.13.0/tests) directory.
 
 # Changelog
+
+## 0.13.0 (31.07.2024)
+
+- Tokio 1.38
+- Redis 0.26
 
 ## 0.12.0 (18.06.2024)
 
