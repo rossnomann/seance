@@ -21,9 +21,13 @@ See [tests](https://github.com/rossnomann/seance/tree/0.13.0/tests) directory.
 
 # Changelog
 
+## 0.14.0 (07.09.2024)
+
+- Tokio 1.40
+
 ## 0.13.0 (31.07.2024)
 
-- Tokio 1.38
+- Tokio 1.39
 - Redis 0.26
 
 ## 0.12.0 (18.06.2024)
