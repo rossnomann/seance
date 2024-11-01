@@ -6,20 +6,25 @@ A session library.
 [![Version](https://img.shields.io/crates/v/seance.svg?style=flat-square)](https://crates.io/crates/seance)
 [![Downloads](https://img.shields.io/crates/d/seance.svg?style=flat-square)](https://crates.io/crates/seance)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat-square)](https://docs.rs/seance)
-[![License](https://img.shields.io/crates/l/seance.svg?style=flat-square)](https://github.com/rossnomann/seance/tree/0.14.0/LICENSE)
+[![License](https://img.shields.io/crates/l/seance.svg?style=flat-square)](https://github.com/rossnomann/seance/tree/0.15.0/LICENSE)
 
 # Installation
 
 ```toml
 [dependencies]
-seance = "0.14.0"
+seance = "0.15.0"
 ```
 
 # Example
 
-See [tests](https://github.com/rossnomann/seance/tree/0.14.0/tests) directory.
+See [tests](https://github.com/rossnomann/seance/tree/0.15.0/tests) directory.
 
 # Changelog
+
+## 0.15.0 (01.11.2024)
+
+- Tokio 1.41
+- Redis 0.27
 
 ## 0.14.0 (07.09.2024)
 
