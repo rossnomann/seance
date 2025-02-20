@@ -1,5 +1,5 @@
 use crate::utils::now;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::{Error as JsonError, Value as JsonValue};
 use std::time::SystemTimeError;
 

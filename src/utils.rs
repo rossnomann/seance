@@ -1,4 +1,4 @@
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use serde_json::Error as JsonError;
 use std::time::{SystemTime, SystemTimeError};
 

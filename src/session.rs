@@ -1,6 +1,6 @@
 use std::{error::Error, fmt, sync::Arc, time::SystemTimeError};
 
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use serde_json::Error as JsonError;
 use tokio::sync::Mutex;
 

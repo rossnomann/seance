@@ -43,7 +43,7 @@ impl SessionBackend for FilesystemBackend {
                 return match error.kind() {
                     IoErrorKind::NotFound => Ok(result),
                     _ => Err(FilesystemBackendError::GetSessions(error)),
-                }
+                };
             }
         };
         while let Some(entry) = entries

@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use tokio::{
-    sync::mpsc::{channel, Receiver, Sender},
+    sync::mpsc::{Receiver, Sender, channel},
     time::interval,
 };
 

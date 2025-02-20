@@ -1,12 +1,12 @@
 use std::{
-    env::{var, VarError},
+    env::{VarError, var},
     time::Duration,
 };
 
 use redis::Client;
 use tokio::time::sleep;
 
-use seance::{backend::redis::RedisBackend, SessionCollector, SessionManager};
+use seance::{SessionCollector, SessionManager, backend::redis::RedisBackend};
 
 const DEFAULT_ADDRESS: &str = "redis://127.0.0.1:6379";
 

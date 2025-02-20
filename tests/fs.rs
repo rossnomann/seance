@@ -3,7 +3,7 @@ use std::time::Duration;
 use tempfile::tempdir;
 use tokio::time::sleep;
 
-use seance::{backend::fs::FilesystemBackend, SessionCollector, SessionManager};
+use seance::{SessionCollector, SessionManager, backend::fs::FilesystemBackend};
 
 #[tokio::test]
 async fn fs() {
