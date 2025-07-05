@@ -40,6 +40,8 @@
               }
             ))
             rust-dev
+            pkgs.redis
+            pkgs.mprocs
           ];
           shellHook = ''
             export CARGO_HOME="$PWD/.cargo"
