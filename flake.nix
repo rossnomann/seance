@@ -20,8 +20,10 @@
             toolchain.minimal.override {
               extensions = [
                 "rust-analyzer"
+                "rust-docs"
                 "rust-src"
                 "rustfmt"
+                "clippy"
               ];
             }
           )
@@ -31,14 +33,6 @@
         devShells.default = pkgs.mkShell {
           RUST_SRC_PATH = "${rust-dev}/lib/rustlib/src/rust/library";
           buildInputs = [
-            (pkgs.lib.hiPrio (
-              pkgs.rust-bin.stable.latest.minimal.override {
-                extensions = [
-                  "rust-docs"
-                  "clippy"
-                ];
-              }
-            ))
             rust-dev
             pkgs.redis
             pkgs.mprocs
