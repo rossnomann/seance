@@ -61,12 +61,11 @@ where
     {
         let key = key.as_ref();
         let mut value = ValueRef::new(&value);
-        if let Some(old_value) = self.read_value(key).await? {
-            if !old_value.is_expired().map_err(SessionError::CheckExpired)? {
-                if let Some(expires_at) = old_value.get_expires_at() {
-                    value.set_expires_at(expires_at);
-                }
-            }
+        if let Some(old_value) = self.read_value(key).await?
+            && !old_value.is_expired().map_err(SessionError::CheckExpired)?
+            && let Some(expires_at) = old_value.get_expires_at()
+        {
+            value.set_expires_at(expires_at);
         };
         self.write_value(key, value).await?;
         Ok(())

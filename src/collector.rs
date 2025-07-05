@@ -57,13 +57,12 @@ where
                 .get_session_age(&session_id)
                 .await
                 .map_err(|err| err.to_string())?
+                && timestamp - age >= lifetime
             {
-                if timestamp - age >= lifetime {
-                    self.backend
-                        .remove_session(&session_id)
-                        .await
-                        .map_err(|err| err.to_string())?;
-                }
+                self.backend
+                    .remove_session(&session_id)
+                    .await
+                    .map_err(|err| err.to_string())?;
             }
         }
         Ok(())

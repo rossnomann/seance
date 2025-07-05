@@ -122,13 +122,13 @@ impl SessionBackend for FilesystemBackend {
 
     async fn remove_value(&mut self, session_id: &str, key: &str) -> Result<(), Self::Error> {
         let session_root = self.root.clone().join(session_id);
-        if is_session_root_exists(&session_root).await? {
-            if let Err(error) = fs::remove_file(session_root.join(key)).await {
-                return match error.kind() {
-                    IoErrorKind::NotFound => Ok(()),
-                    _ => Err(FilesystemBackendError::RemoveValue(error)),
-                };
-            }
+        if is_session_root_exists(&session_root).await?
+            && let Err(error) = fs::remove_file(session_root.join(key)).await
+        {
+            return match error.kind() {
+                IoErrorKind::NotFound => Ok(()),
+                _ => Err(FilesystemBackendError::RemoveValue(error)),
+            };
         }
         Ok(())
     }
