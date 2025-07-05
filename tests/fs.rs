@@ -8,7 +8,7 @@ use seance::{SessionCollector, SessionManager, backend::fs::FilesystemBackend};
 #[tokio::test]
 async fn fs() {
     let tmpdir = tempdir().expect("Failed to create temp directory");
-    let backend = FilesystemBackend::new(tmpdir.into_path());
+    let backend = FilesystemBackend::new(tmpdir.keep());
     let manager = SessionManager::new(backend.clone());
     let mut session = manager.get_session("session-id");
     session.set("key", &"value").await.unwrap();

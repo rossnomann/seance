@@ -79,7 +79,7 @@ where
             }
             interval.tick().await;
             if let Err(err) = self.collect().await {
-                log::error!("An error occurred in session GC: {}", err)
+                log::error!("An error occurred in session GC: {err}")
             }
         }
     }
